@@ -1,7 +1,8 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: rocketchat-app
+  namespace: kube-public
 spec:
   template:
     metadata:
@@ -14,7 +15,7 @@ spec:
         image: rocketchat/rocket.chat:latest
         env:
         - name: ROOT_URL
-          value: "https://chat.example.com"
+          value: "https://chat.qjw.hj"
         - name: MONGO_URL
           value: "mongodb://mongo-0.mongo,mongo-1.mongo,mongo-2.mongo:27017/rocketchat?replicaSet=rs0"
         ports:

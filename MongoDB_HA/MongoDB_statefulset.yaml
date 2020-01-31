@@ -1,7 +1,8 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
  name: mongo
+ namespace: kube-public
 spec:
  serviceName: "mongo"
  replicas: 3
@@ -32,11 +33,13 @@ spec:
          env:
            - name: MONGO_SIDECAR_POD_LABELS
              value: "role=mongo,environment=test"
+           - name: KUBERNETES_MONGO_SERVICE_NAME
+             value: "mongo"
  volumeClaimTemplates:
  - metadata:
      name: mongo-persistent-storage
      annotations:
-       volume.beta.kubernetes.io/storage-class: "fast"
+       volume.beta.kubernetes.io/storage-class: "storageclass-default"
    spec:
      accessModes: [ "ReadWriteOnce" ]
      resources:

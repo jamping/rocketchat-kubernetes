@@ -2,13 +2,16 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: rocketchat-ingress
+  namespace: kube-public
+  annotations:
+    kubernetes.io/ingress.class: traefik
 spec:
   tls:
   - hosts:
-    - chat.example.com
+    - chat.qjw.hj
     secretName: rocketchat-ssl
   rules:
-  - host: chat.example.com
+  - host: chat.qjw.hj
     http:
       paths:
       - path: /
