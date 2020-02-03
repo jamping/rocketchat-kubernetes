@@ -42,13 +42,11 @@ If you use RBAC you need to bind a cluster role for your application :
 Then you can start deploying the pods.
 
 ```bash
-$ kubectl create -f MongoDB_HA/storage.yaml
 $ kubectl create -f MongoDB_HA/headless_service.yaml
 $ kubectl create -f MongoDB_HA/MongoDB_statefulset.yaml
 $ kubectl create -f app-secrets.yaml
 $ kubectl create -f app-service.yaml
 $ kubectl create -f app-deployment.yaml
-$ kubectl create -f ingress-deployment.yaml
 $ kubectl create -f app-ingress.yaml
 ```
 

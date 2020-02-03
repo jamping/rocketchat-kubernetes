@@ -4,20 +4,116 @@ metadata:
   name: rocketchat-app
   namespace: kube-public
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocketchat
+      tier: frontend
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       labels:
         app: rocketchat
         tier: frontend
     spec:
+      imagePullSecrets:
+        - name: rocketchat-registry-qjw-hj-key
       containers:
       - name: rocketchat-app
-        image: rocketchat/rocket.chat:latest
+        image: registry.apps.k8s.qjw.hj/rocketchat/rocket.chat:latest
+        command: ['bash']
+        args:
+        - '-c'
+        - |
+          "for i in `seq 1 30`; do
+            node main.js &&
+            s=$$? && break || s=$$?;
+            echo \"Tried $$i times. Waiting 5 secs...\";
+            sleep 5;
+          done; (exit $$s)"
         env:
         - name: ROOT_URL
           value: "https://chat.qjw.hj"
         - name: MONGO_URL
           value: "mongodb://mongo-0.mongo,mongo-1.mongo,mongo-2.mongo:27017/rocketchat?replicaSet=rs0"
+        - name: MONGO_OPLOG_URL
+          value: "mongodb://mongo-0.mongo,mongo-1.mongo,mongo-2.mongo:27017/local"
+        - name: MAIL_URL
+          value: "mail.zzb.hj"
         ports:
           - name: http
             containerPort: 3000
+        livenessProbe:
+          httpGet:
+            path: /api/info
+            port: http
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /api/info
+            port: http
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: rocket-data
+          mountPath: /app/uploads
+        volumes:
+        - name: rocket-data      
+          persistentVolumeClaim:
+            claimName: rocket-data-pvc
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rocketchat-hubot-app
+  namespace: kube-public
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocketchat-hubot
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: rocketchat-hubot
+    spec:
+      imagePullSecrets:
+        - name: rocketchat-registry-qjw-hj-key
+      containers:
+      - name: rocketchat-hubot-app
+        image: registry.apps.k8s.qjw.hj/rocketchat/hubot-rocketchat:latest        
+        env:
+        - name: ROCKETCHAT_URL
+          value: "rocketchat-app"
+        - name: ROCKETCHAT_ROOM
+          value: "GENERAL"
+        - name: ROCKETCHAT_USER
+          value: "hubot"
+        - name: ROCKETCHAT_PASSWORD
+          value: "password"
+        - name: BOT_NAME
+          value: "hubot"
+        - name: EXTERNAL_SCRIPTS
+          value: "hubot-help,hubot-seen,hubot-links,hubot-diagnostics"
+        ports:
+          - name: http
+            port: 3001
+            containerPort: 8080        
+        volumeMounts:
+        - name: rocket-hubot-data
+          mountPath: /home/hubot/scripts
+        volumes:
+        - name: rocket-hubot-data     
+          persistentVolumeClaim:
+            claimName: rocket-hubot-data-pvc

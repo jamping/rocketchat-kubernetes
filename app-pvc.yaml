@@ -1,0 +1,28 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: rocket-data-pvc
+  namespace: kube-public
+  annotations:  
+    volume.beta.kubernetes.io/storage-class: "storageclass-default"  
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: rocket-hubot-data-pvc
+  namespace: kube-public
+  annotations:  
+    volume.beta.kubernetes.io/storage-class: "storageclass-default"  
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: 10Gi

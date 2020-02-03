@@ -13,9 +13,11 @@ spec:
        environment: test
    spec:
      terminationGracePeriodSeconds: 10
+     imagePullSecrets:
+        - name: rocketchat-registry-qjw-hj-key
      containers:
        - name: mongo
-         image: mongo
+         image: registry.apps.k8s.qjw.hj/mongo:4.0
          command:
            - mongod
            - "--bind_ip_all"
@@ -29,7 +31,7 @@ spec:
            - name: mongo-persistent-storage
              mountPath: /data/db
        - name: mongo-sidecar
-         image: cvallance/mongo-k8s-sidecar
+         image: registry.apps.k8s.qjw.hj/cvallance/mongo-k8s-sidecar
          env:
            - name: MONGO_SIDECAR_POD_LABELS
              value: "role=mongo,environment=test"
